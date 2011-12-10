@@ -124,11 +124,11 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'league.core',
+    'core',
 )
 
 LOGIN_URL = '/login/'
-
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_URL = '/logout/'
 
 # A sample logging configuration. The only tangible logging

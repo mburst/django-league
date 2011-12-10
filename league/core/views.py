@@ -1,13 +1,13 @@
 from core.models import *
 from core.forms import *
 
-from django.shortcuts import render#, get_object_or_404, redirect
+from django.shortcuts import render, redirect#, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 #from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 #from django.db.models import F
 #from django.forms.models import modelformset_factory
 #from django.http import HttpResponse
-#from django.db import connection, transaction
+from django.db import connection, transaction
 
 #from operator import attrgetter
 #from datetime import datetime, timedelta
@@ -20,17 +20,18 @@ def home(request):
 @login_required
 def create_team(request):
     if request.method == 'POST':
-        form = TeamForm(request.POST)
-        new_team = form.save(commit=False)
-        leader = request.user
-        
-        new_team.players.add(leader)
-        new_team.leader = leader
-        
-        if new_team.is_valid():
+        form = TeamForm(request.POST)        
+        if form.is_valid():
+            new_team = form.save(commit=False)
+            leader = request.user
+            new_team.leader = leader
             new_team.save()
-            new_team.save_m2m()
+            new_team.players.add(leader)
+            new_team.save()
             return redirect('home')
     else:
         form = TeamForm()
     return render(request, 'core/create_team.html', locals())
+    
+def manage_team(request, team_id=None)
+    

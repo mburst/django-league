@@ -27,24 +27,24 @@ class Game(models.Model):
     
 class Team(models.Model):
     name = models.CharField(max_length=50)
-    players = models.ManyToManyField('auth.User', related_name='teams')
-    leader = models.ForeignKey('auth.user', related_name='leads')
+    players = models.ManyToManyField('auth.User', related_name='teams', blank=True)
+    leader = models.ForeignKey('auth.user', related_name='leads', blank=True)
     captains = models.ManyToManyField('auth.User', related_name='captain_of', blank=True)
     date_created = models.DateField(auto_now_add=True)
     recruiting = models.BooleanField(default=False)
     #URLField is basically deprecated so no point in using it
     url = models.CharField(max_length=200, blank=True)
-    details = models.TextField()
+    details = models.TextField(blank=True)
     game = models.ForeignKey('Game', related_name="teams")
     tag = models.CharField(max_length=25)
     
     #Hooray for precalculated values
-    wins = models.PositiveSmallIntegerField()
-    losses = models.PositiveSmallIntegerField()
-    draws = models.PositiveSmallIntegerField()
-    forfiets = models.PositiveSmallIntegerField()
-    points_forward = models.PositiveIntegerField()
-    points_against = models.PositiveIntegerField()
+    wins = models.PositiveSmallIntegerField(default=0)
+    losses = models.PositiveSmallIntegerField(default=0)
+    draws = models.PositiveSmallIntegerField(default=0)
+    forfiets = models.PositiveSmallIntegerField(default=0)
+    points_forward = models.PositiveIntegerField(default=0)
+    points_against = models.PositiveIntegerField(default=0)
     
 class Match(models.Model):
     RESULT_CHOICES = (
@@ -81,4 +81,8 @@ class UniqueID(models.Model):
     
     class Meta:
         unique_together = ('game', 'name')
+        
+class TeamInvitation(models.Model):
+    user = models.ForeignKey('auth.User', related_name='invitations')
+    team = models.ForeignKey('Team', related_name='pending_invites')
     
