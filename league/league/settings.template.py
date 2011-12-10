@@ -47,6 +47,9 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
+# http://morethanseven.net/2009/02/11/django-settings-tip-setting-relative-paths.html
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
 MEDIA_ROOT = os.path.join(SITE_ROOT, 'media')
@@ -76,8 +79,8 @@ STATICFILES_DIRS = (
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
-    #'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    #'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
@@ -122,6 +125,10 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'league.core',
 )
+
+LOGIN_URL = '/login/'
+
+LOGOUT_URL = '/logout/'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to

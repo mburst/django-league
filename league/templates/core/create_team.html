@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}LeagON{% endblock %}
+{% block js %}
+{% endblock %}
+{% block content %}
+    <form action="{% url core.views.create_team %}" method="POST">
+    {{form.as_ul}}
+    <input type="submit" value="submit" />
+    {% csrf_token %}
+    </form>
+{% endblock %}

@@ -1,26 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from datetime import datetime
-
 class League(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     rules = models.TextField(blank=True)
     roster_lock = models.BooleanField(default=False)
-    moderators = models.ManyToManyField('auth.User')
+    moderators = models.ManyToManyField('auth.User', related_name='moderates')
     #Regular season start/end date (not including playoffs)
     start = models.DateTimeField()
     end = models.DateTimeField()
     playoff = models.BooleanField(default=False)
     
 class Division(models.Model):
-    league = models.ForeignKey('League')
+    league = models.ForeignKey('League', related_name='divisions')
     name = models.CharField(max_length=50)
+    teams = models.ManyToManyField('Team', related_name='division')
     
 class DivisionNews(models.Model):
     news = models.TextField()
-    author = models.ForeignKey('auth.User')
+    author = models.ForeignKey('auth.User', related_name='division_news')
     date = models.DateTimeField(auto_now_add=True)
     
 class Game(models.Model):
@@ -28,16 +27,15 @@ class Game(models.Model):
     
 class Team(models.Model):
     name = models.CharField(max_length=50)
-    created_by = models.ForeignKey('auth.User')
-    date_created = models.DateField(default=datetime.now)
+    players = models.ManyToManyField('auth.User', related_name='teams')
+    leader = models.ForeignKey('auth.user', related_name='leads')
+    captains = models.ManyToManyField('auth.User', related_name='captain_of', blank=True)
+    date_created = models.DateField(auto_now_add=True)
     recruiting = models.BooleanField(default=False)
     #URLField is basically deprecated so no point in using it
     url = models.CharField(max_length=200, blank=True)
-    players = models.ManyToManyField('auth.User')
-    leader = models.ForeignKey('auth.user')
-    captains = models.ManyToManyField('auth.User')
     details = models.TextField()
-    division = models.ForeignKey('Team')
+    game = models.ForeignKey('Game', related_name="teams")
     tag = models.CharField(max_length=25)
     
     #Hooray for precalculated values
@@ -50,16 +48,16 @@ class Team(models.Model):
     
 class Match(models.Model):
     RESULT_CHOICES = (
-        ('1', 'Away Team Wins!')
-        ('2', 'Home Team Wins!')
-        ('3', 'Draw!')
+        ('1', 'Away Team Wins!'),
+        ('2', 'Home Team Wins!'),
+        ('3', 'Draw!'),
     )
     
-    league = models.ForeignKey('League')
-    away = models.ForeignKey('Team')
+    league = models.ForeignKey('League', related_name='matches')
+    away = models.ForeignKey('Team', related_name='away_matches')
     away_score = models.PositiveSmallIntegerField(blank=True)
     away_accept = models.BooleanField(default=False)
-    home = models.ForeignKey('Team', blank=True, null=True)
+    home = models.ForeignKey('Team', related_name='home_matches', blank=True, null=True)
     home_score = models.PositiveSmallIntegerField(blank=True)
     home_accept = models.BooleanField(default=False)
     play_by = models.DateTimeField()
@@ -71,8 +69,8 @@ class Match(models.Model):
         unique_together = ('away', 'home')
     
 class MatchMessage(models.Model):
-    match = models.ForeignKey('Match')
-    user = models.ForeignKey('auth.User')
+    match = models.ForeignKey('Match', related_name='message')
+    user = models.ForeignKey('auth.User', related_name='match_comments')
     message = models.TextField()
     time = models.DateTimeField(auto_now_add=True)
     
