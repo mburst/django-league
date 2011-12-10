@@ -12,6 +12,7 @@ class League(models.Model):
     #Regular season start/end date (not including playoffs)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    playoff = models.BooleanField(default=False)
     
 class Division(models.Model):
     league = models.ForeignKey('League')
@@ -26,7 +27,7 @@ class Game(models.Model):
     name = models.CharField(max_length=50)
     
 class Team(models.Model):
-    name = models.CharField(max_length = 50)
+    name = models.CharField(max_length=50)
     created_by = models.ForeignKey('auth.User')
     date_created = models.DateField(default=datetime.now)
     recruiting = models.BooleanField(default=False)
@@ -36,6 +37,8 @@ class Team(models.Model):
     leader = models.ForeignKey('auth.user')
     captains = models.ManyToManyField('auth.User')
     details = models.TextField()
+    division = models.ForeignKey('Team')
+    tag = models.CharField(max_length=25)
     
     #Hooray for precalculated values
     wins = models.PositiveSmallIntegerField()
@@ -62,6 +65,7 @@ class Match(models.Model):
     play_by = models.DateTimeField()
     date = models.DateTimeField(blank=True)
     result = models.CharField(max_length=1, choices=RESULT_CHOICES)
+    playoff = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('away', 'home')
@@ -78,5 +82,5 @@ class UniqueID(models.Model):
     name = models.CharField(max_length=30)
     
     class Meta:
-        unique_together = ('user', 'game', 'name')
+        unique_together = ('game', 'name')
     
