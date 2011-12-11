@@ -3,6 +3,12 @@
 {% block js %}
 {% endblock %}
 {% block content %}
-    <input id="player_search" />
-    <input id="player_search_id" />
+    <form action="{% url core.views.manage_team team.id %}" method="POST">
+        {{ form.as_ul }}
+        <input id="player_search" />
+        <input id="player_search_id" />
+        <input type="submit" value="Update Team">
+        {% csrf_token %}
+    </form>
+    
 {% endblock %}

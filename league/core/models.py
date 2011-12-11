@@ -2,15 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class League(models.Model):
+    
+    
     name = models.CharField(max_length=100)
     description = models.TextField()
     rules = models.TextField(blank=True)
     roster_lock = models.BooleanField(default=False)
     moderators = models.ManyToManyField('auth.User', related_name='moderates')
+    game = models.ForeignKey('Game', related_name='leagues')
     #Regular season start/end date (not including playoffs)
     start = models.DateTimeField()
-    end = models.DateTimeField()
-    playoff = models.BooleanField(default=False)
+    weeks = models.PositiveSmallIntegerField()
+    playoff = models.ForeignKey('Playoff', default=None, blank=True, null=True)
+    finished = models.BooleanField(default=False)
     
 class Division(models.Model):
     league = models.ForeignKey('League', related_name='divisions')
@@ -24,6 +28,9 @@ class DivisionNews(models.Model):
     
 class Game(models.Model):
     name = models.CharField(max_length=50)
+    
+    def __unicode__(self):
+        return u'%s' % self.name
     
 class Team(models.Model):
     name = models.CharField(max_length=50)
@@ -46,11 +53,52 @@ class Team(models.Model):
     points_forward = models.PositiveIntegerField(default=0)
     points_against = models.PositiveIntegerField(default=0)
     
+class Playoff(models.Model):
+    PLAYOFF_CHOICES = (
+        ('D', 'Double Elimination'),
+        ('R', 'Round Robin'),
+        ('S', 'Single Elimination'),
+    )
+    
+    teams = models.ManyToManyField('PlayoffTeam') #8, 16, 32
+    type = models.CharField(max_length=1, choices=PLAYOFF_CHOICES)
+    rounds = models.PositiveSmallIntegerField() #sqrt(teams)
+    
+class PlayoffRound(models.Model):
+    number = models.PositiveSmallIntegerField()
+    matches = models.ManyToManyField('PlayoffMatch')
+    
+class PlayoffTeam(models.Model):
+    team = models.ForeignKey('Team')
+    seed = models.PositiveSmallIntegerField()
+    wins = models.PositiveSmallIntegerField(default=0)
+    losses = models.PositiveSmallIntegerField(default=0)
+    eliminated = models.BooleanField(default=False)
+    
+#Because I hate model inheritance
+class PlayoffMatch(models.Model):
+    RESULT_CHOICES = (
+        ('1', 'Away Team Wins!'),
+        ('2', 'Home Team Wins!'),
+        ('4', 'Pending'),
+    )
+    
+    away = models.ForeignKey('PlayoffTeam', related_name='away_matches', blank=True, null=True)
+    away_score = models.PositiveSmallIntegerField(blank=True)
+    away_accept = models.BooleanField(default=False)
+    home = models.ForeignKey('PlayoffTeam', related_name='home_matches', blank=True, null=True)
+    home_score = models.PositiveSmallIntegerField(blank=True)
+    home_accept = models.BooleanField(default=False)
+    play_by = models.DateTimeField()
+    date = models.DateTimeField(blank=True)
+    result = models.CharField(max_length=1, default='4', choices=RESULT_CHOICES)
+    
 class Match(models.Model):
     RESULT_CHOICES = (
         ('1', 'Away Team Wins!'),
         ('2', 'Home Team Wins!'),
         ('3', 'Draw!'),
+        ('4', 'Pending'),
     )
     
     league = models.ForeignKey('League', related_name='matches')
@@ -62,8 +110,7 @@ class Match(models.Model):
     home_accept = models.BooleanField(default=False)
     play_by = models.DateTimeField()
     date = models.DateTimeField(blank=True)
-    result = models.CharField(max_length=1, choices=RESULT_CHOICES)
-    playoff = models.BooleanField(default=False)
+    result = models.CharField(max_length=1, default='4', choices=RESULT_CHOICES)
     
     class Meta:
         unique_together = ('away', 'home')

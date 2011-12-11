@@ -54,7 +54,20 @@ def create_team(request):
     return render(request, 'core/create_team.html', locals())
 
 def manage_team(request, team_id=None):
-    return render(request, 'core/manage_team.html', locals())
+    try:
+        team = Team.objects.get(id=team_id)
+    except:
+        return redirect('/create_team/')
+    if request.user == team.leader:
+        if request.method == "POST":
+            form = TeamForm(request.POST, instance=team)
+            form.save()
+        else:
+            form = TeamForm(instance=team)
+        return render(request, 'core/manage_team.html', locals())
+    return redirect('home') #change to team_page
+
+#def team_page(request, team_id):
 
 def player_search(request):
     if request.is_ajax():
