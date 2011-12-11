@@ -3,5 +3,9 @@
 {% block js %}
 {% endblock %}
 {% block content %}
-    <p>This is currently a work in development</p>
+    {% if user.is_authenticated %}
+        <p>Welcome {{user.username}}</p>
+    {% else %}
+        <p>This is currently a work in development</p>
+    {% endif %}
 {% endblock %}
