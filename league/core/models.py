@@ -2,26 +2,33 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class League(models.Model):
-    
-    
     name = models.CharField(max_length=100)
     description = models.TextField()
     rules = models.TextField(blank=True)
     roster_lock = models.BooleanField(default=False)
-    moderators = models.ManyToManyField('auth.User', related_name='moderates')
+    moderators = models.ManyToManyField('auth.User', related_name='moderates', blank=True)
     game = models.ForeignKey('Game', related_name='leagues')
-    #Regular season start/end date (not including playoffs)
-    start = models.DateTimeField()
-    weeks = models.PositiveSmallIntegerField()
+    start = models.DateTimeField(blank=True)
+    weeks = models.PositiveSmallIntegerField(blank=True)
     playoff = models.ForeignKey('Playoff', default=None, blank=True, null=True)
     finished = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return u'%s' % self.name
     
 class Division(models.Model):
     league = models.ForeignKey('League', related_name='divisions')
     name = models.CharField(max_length=50)
     teams = models.ManyToManyField('Team', related_name='division')
     
+    def __unicode__(self):
+        return u'%s' % self.name
+    
+    class Meta:
+        unique_together = ('league', 'name')
+    
 class DivisionNews(models.Model):
+    title = models.CharField(max_length=100)
     news = models.TextField()
     author = models.ForeignKey('auth.User', related_name='division_news')
     date = models.DateTimeField(auto_now_add=True)
@@ -42,7 +49,7 @@ class Team(models.Model):
     #URLField is basically deprecated so no point in using it
     url = models.CharField(max_length=200, blank=True)
     details = models.TextField(blank=True)
-    game = models.ForeignKey('Game', related_name="teams")
+    game = models.ForeignKey('Game', related_name="teams", editable=False)
     tag = models.CharField(max_length=25)
     
     #Hooray for precalculated values
@@ -92,6 +99,7 @@ class PlayoffMatch(models.Model):
     play_by = models.DateTimeField()
     date = models.DateTimeField(blank=True)
     result = models.CharField(max_length=1, default='4', choices=RESULT_CHOICES)
+    message = models.ManyToManyField('MatchMessage', blank=True)
     
 class Match(models.Model):
     RESULT_CHOICES = (
@@ -111,12 +119,12 @@ class Match(models.Model):
     play_by = models.DateTimeField()
     date = models.DateTimeField(blank=True)
     result = models.CharField(max_length=1, default='4', choices=RESULT_CHOICES)
+    message = models.ManyToManyField('MatchMessage', blank=True)
     
     class Meta:
         unique_together = ('away', 'home')
     
 class MatchMessage(models.Model):
-    match = models.ForeignKey('Match', related_name='message')
     user = models.ForeignKey('auth.User', related_name='match_comments')
     message = models.TextField()
     time = models.DateTimeField(auto_now_add=True)

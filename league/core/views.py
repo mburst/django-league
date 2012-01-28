@@ -38,13 +38,18 @@ def register(request):
     return render(request, 'core/register.html', locals())
     
 @login_required
-def create_team(request):
+def create_team(request, league_id=None):
     if request.method == 'POST':
+        try:
+            game = League.objects.get(id=league_id).game
+        except:
+            return HttpResponse("Sorry our servers our busy. Please try again later.")
         form = TeamForm(request.POST)        
         if form.is_valid():
             new_team = form.save(commit=False)
             leader = request.user
             new_team.leader = leader
+            new_team.game = game
             new_team.save()
             new_team.players.add(leader)
             new_team.save()

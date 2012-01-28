@@ -6,7 +6,7 @@ class TeamForm(ModelForm):
     
     class Meta:
         model = Team
-        fields = ('name', 'tag', 'game', 'url', 'recruiting', 'details')
+        fields = ('name', 'tag', 'url', 'recruiting', 'details')
         
 class TeamInvitationForm(ModelForm):
     accept = BooleanField()
