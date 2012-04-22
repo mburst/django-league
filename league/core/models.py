@@ -69,7 +69,7 @@ class Playoff(models.Model):
     
     teams = models.ManyToManyField('PlayoffTeam') #8, 16, 32
     style = models.CharField(max_length=1, choices=PLAYOFF_CHOICES)
-    rounds = models.PositiveSmallIntegerField() #sqrt(teams)
+    rounds = models.ManyToManyField('PlayoffRound')
     
 class PlayoffRound(models.Model):
     number = models.PositiveSmallIntegerField()
