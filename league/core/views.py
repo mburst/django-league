@@ -85,4 +85,22 @@ def player_search(request):
     else:
         redirect('home')
     
+def generate_season(teams, weeks):
+    count = len(teams)
+    if count%2 == 1:
+        count+=1
+        teams.append("BYE")
+    if count <= weeks:
+           print "Too many weeks and not enough teams"
+    table= [ [ 0 for i in range(count) ] for j in range(weeks) ]
+    for x in range(weeks):
+        for y in range(count):
+            table[x][y] = (x+y)%count
+    for row in table:
+        print "Round " + `row[0]`
+        for col in range(count/2):
+            print `teams[row[col]]` + "vs" + `teams[row[-(col+1)]]`
+        print "END ROUND " + `row[0]`
+    print count
+    
     

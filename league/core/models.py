@@ -53,6 +53,7 @@ class Team(models.Model):
     
 class Stats(models.Model):
     team = models.ForeignKey('Team')
+    division = models.ForeignKey('Division')
     wins = models.PositiveSmallIntegerField(default=0)
     losses = models.PositiveSmallIntegerField(default=0)
     draws = models.PositiveSmallIntegerField(default=0)
@@ -73,7 +74,7 @@ class Playoff(models.Model):
     
 class PlayoffRound(models.Model):
     number = models.PositiveSmallIntegerField()
-    matches = models.ManyToManyField('PlayoffMatch')
+    matches = models.ManyToManyField('Match')
     
 class PlayoffTeam(models.Model):
     team = models.ForeignKey('Team')
@@ -83,25 +84,6 @@ class PlayoffTeam(models.Model):
     losses = models.PositiveSmallIntegerField(default=0)
     eliminated = models.BooleanField(default=False)
     
-#Because I hate model inheritance
-class PlayoffMatch(models.Model):
-    RESULT_CHOICES = (
-        ('1', 'Away Team Wins!'),
-        ('2', 'Home Team Wins!'),
-        ('4', 'Pending'),
-    )
-    
-    away = models.ForeignKey('PlayoffTeam', related_name='away_matches', blank=True, null=True)
-    away_score = models.PositiveSmallIntegerField(blank=True)
-    away_accept = models.BooleanField(default=False)
-    home = models.ForeignKey('PlayoffTeam', related_name='home_matches', blank=True, null=True)
-    home_score = models.PositiveSmallIntegerField(blank=True)
-    home_accept = models.BooleanField(default=False)
-    play_by = models.DateTimeField()
-    date = models.DateTimeField(blank=True)
-    result = models.CharField(max_length=1, default='4', choices=RESULT_CHOICES)
-    message = models.ManyToManyField('MatchMessage', blank=True)
-    
 class Match(models.Model):
     RESULT_CHOICES = (
         ('1', 'Away Team Wins!'),
@@ -110,8 +92,8 @@ class Match(models.Model):
         ('4', 'Pending'),
     )
     
-    league = models.ForeignKey('League', related_name='matches')
-    away = models.ForeignKey('Team', related_name='away_matches')
+    division = models.ForeignKey('Division', related_name='matches')
+    away = models.ForeignKey('Team', related_name='away_matches', blank=True, null=True)
     away_score = models.PositiveSmallIntegerField(blank=True)
     away_accept = models.BooleanField(default=False)
     home = models.ForeignKey('Team', related_name='home_matches', blank=True, null=True)
