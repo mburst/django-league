@@ -18,8 +18,9 @@ class Division(models.Model):
     league = models.ForeignKey('League', related_name='divisions')
     name = models.CharField(max_length=50)
     teams = models.ManyToManyField('Team', related_name='division')
-    playoff = models.ForeignKey('Playoff', default=None, blank=True, null=True)
+    playoff = models.ForeignKey('Playoff', blank=True, null=True)
     moderators = models.ManyToManyField('auth.User', related_name='moderates', blank=True)
+    max_teams = models.PositiveSmallIntegerField(blank=True)
     
     def __unicode__(self):
         return u'%s' % self.name
@@ -32,6 +33,9 @@ class DivisionNews(models.Model):
     news = models.TextField()
     author = models.ForeignKey('auth.User', related_name='division_news')
     date = models.DateTimeField(auto_now_add=True)
+    
+    def __unicode__(self):
+        return u'%s' % self.title
     
 class Game(models.Model):
     name = models.CharField(max_length=50)
@@ -51,6 +55,9 @@ class Team(models.Model):
     game = models.ForeignKey('Game', related_name="teams", editable=False)
     tag = models.CharField(max_length=25)
     
+    def __unicode__(self):
+        return '%s - %s' % (self.tag, self.name)
+    
 class Stats(models.Model):
     team = models.ForeignKey('Team')
     division = models.ForeignKey('Division')
@@ -68,7 +75,6 @@ class Playoff(models.Model):
         ('S', 'Single Elimination'),
     )
     
-    teams = models.ManyToManyField('PlayoffTeam') #8, 16, 32
     style = models.CharField(max_length=1, choices=PLAYOFF_CHOICES)
     rounds = models.ManyToManyField('PlayoffRound')
     
@@ -77,11 +83,9 @@ class PlayoffRound(models.Model):
     matches = models.ManyToManyField('Match')
     
 class PlayoffTeam(models.Model):
+    playoff = models.ForeignKey('Playoff')
     team = models.ForeignKey('Team')
     seed = models.PositiveSmallIntegerField()
-    #Not really sure if I need these last 3
-    wins = models.PositiveSmallIntegerField(default=0)
-    losses = models.PositiveSmallIntegerField(default=0)
     eliminated = models.BooleanField(default=False)
     
 class Match(models.Model):
